@@ -15,27 +15,39 @@ if [ ! -x "$MVN_BIN" ]; then
   mkdir -p "$WRAPPER_DISTS"
   TMP_ZIP="$WRAPPER_DISTS/$ZIP_NAME"
   echo "Downloading Maven from $DIST_URL ..."
-  if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$DIST_URL" -o "$TMP_ZIP"
-  elif command -v wget >/dev/null 2>&1; then
-    wget -q "$DIST_URL" -O "$TMP_ZIP"
-  else
-    java -e "
-      import java.net.*; import java.nio.file.*;
-      public class Dl { public static void main(String[] a) throws Exception {
-        try (var in = URI.create(a[0]).toURL().openStream()) {
-          Files.copy(in, Path.of(a[1]), StandardCopyOption.REPLACE_EXISTING);
-        }
-      }}
-    " "$DIST_URL" "$TMP_ZIP"
-  fi
 
-  if command -v unzip >/dev/null 2>&1; then
-    unzip -q -o "$TMP_ZIP" -d "$WRAPPER_DISTS"
-  else
-    (cd "$WRAPPER_DISTS" && jar xf "$TMP_ZIP")
-  fi
-  rm -f "$TMP_ZIP"
+  TMP_DL=$(mktemp -d)
+  cat << 'EOF' > "$TMP_DL/MvnDownloader.java"
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
+import java.util.zip.*;
+
+public class MvnDownloader {
+    public static void main(String[] args) throws Exception {
+        Path zipPath = Path.of(args[1]);
+        Path destDir = Path.of(args[2]);
+        try (InputStream in = URI.create(args[0]).toURL().openStream()) {
+            Files.copy(in, zipPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zipPath))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                Path outPath = destDir.resolve(entry.getName()).normalize();
+                if (entry.isDirectory()) {
+                    Files.createDirectories(outPath);
+                } else {
+                    Files.createDirectories(outPath.getParent());
+                    Files.copy(zis, outPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
+    }
+}
+EOF
+
+  java "$TMP_DL/MvnDownloader.java" "$DIST_URL" "$TMP_ZIP" "$WRAPPER_DISTS"
+  rm -rf "$TMP_DL" "$TMP_ZIP"
   chmod +x "$MVN_BIN"
 fi
 
