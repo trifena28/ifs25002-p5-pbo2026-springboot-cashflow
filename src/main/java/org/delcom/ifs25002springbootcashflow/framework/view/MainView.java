@@ -23,7 +23,7 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.Locale;
 
-@Route("")
+@Route(value = "cashflow", layout = MainLayout.class)
 @PageTitle("Cashflow - 11S25002")
 public class MainView extends VerticalLayout {
 

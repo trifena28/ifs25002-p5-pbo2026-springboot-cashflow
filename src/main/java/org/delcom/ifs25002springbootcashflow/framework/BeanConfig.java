@@ -1,8 +1,12 @@
 package org.delcom.ifs25002springbootcashflow.framework;
 
 import org.delcom.ifs25002springbootcashflow.adapter.InMemoryCashflowRepository;
+import org.delcom.ifs25002springbootcashflow.adapter.InMemoryUserRepository;
 import org.delcom.ifs25002springbootcashflow.domain.Cashflow;
 import org.delcom.ifs25002springbootcashflow.domain.CashflowRepository;
+import org.delcom.ifs25002springbootcashflow.domain.User;
+import org.delcom.ifs25002springbootcashflow.domain.UserRepository;
+import org.delcom.ifs25002springbootcashflow.usecase.AuthUseCase;
 import org.delcom.ifs25002springbootcashflow.usecase.CashflowUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +15,18 @@ import java.time.LocalDate;
 
 @Configuration
 public class BeanConfig {
+
+    @Bean
+    public UserRepository userRepository() {
+        InMemoryUserRepository repo = new InMemoryUserRepository();
+        repo.save(new User("Admin Delcom", "admin@delcom.org", "admin123"));
+        return repo;
+    }
+
+    @Bean
+    public AuthUseCase authUseCase(UserRepository userRepository) {
+        return new AuthUseCase(userRepository);
+    }
 
     @Bean
     public CashflowRepository cashflowRepository() {
