@@ -1,4 +1,4 @@
-﻿package org.delcom.ifs25002springbootcashflow;
+package org.delcom.ifs25002springbootcashflow;
 
 import org.delcom.ifs25002springbootcashflow.adapter.InMemoryCashflowRepository;
 import org.delcom.ifs25002springbootcashflow.adapter.InMemoryUserRepository;
