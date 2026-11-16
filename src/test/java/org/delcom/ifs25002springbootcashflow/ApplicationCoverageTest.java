@@ -1,4 +1,4 @@
-package org.delcom.ifs25002springbootcashflow;
+﻿package org.delcom.ifs25002springbootcashflow;
 
 import org.delcom.ifs25002springbootcashflow.adapter.InMemoryCashflowRepository;
 import org.delcom.ifs25002springbootcashflow.adapter.InMemoryUserRepository;
@@ -70,8 +70,14 @@ class ApplicationCoverageTest {
 
         Cashflow cNullDate = new Cashflow("Pengeluaran", "Makan", "Sarapan", 15000, null);
         assertNotNull(cNullDate.getTanggal());
+
         Cashflow cWithIdNullDate = new Cashflow("id-2", "Pengeluaran", "Makan", "Makan siang", 20000, null);
         assertEquals("id-2", cWithIdNullDate.getId());
+        assertNotNull(cWithIdNullDate.getTanggal());
+
+        Cashflow cWithIdNonNullDate = new Cashflow("id-3", "Pemasukan", "Gaji", "Bonus", 30000, today);
+        assertEquals("id-3", cWithIdNonNullDate.getId());
+        assertEquals(today, cWithIdNonNullDate.getTanggal());
 
         InMemoryCashflowRepository repo = new InMemoryCashflowRepository();
         Cashflow noId = new Cashflow(null, "Pemasukan", "Bonus", "Bonus proyek", 500000, today);
