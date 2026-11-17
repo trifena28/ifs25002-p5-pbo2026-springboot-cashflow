@@ -71,6 +71,9 @@ class ApplicationCoverageTest {
         Cashflow cNullDate = new Cashflow("Pengeluaran", "Makan", "Sarapan", 15000, null);
         assertNotNull(cNullDate.getTanggal());
 
+        Cashflow cNonNullDate = new Cashflow("Pemasukan", "Gaji", "Gaji pokok", 25000, today);
+        assertEquals(today, cNonNullDate.getTanggal());
+
         Cashflow cWithIdNullDate = new Cashflow("id-2", "Pengeluaran", "Makan", "Makan siang", 20000, null);
         assertEquals("id-2", cWithIdNullDate.getId());
         assertNotNull(cWithIdNullDate.getTanggal());
@@ -83,10 +86,18 @@ class ApplicationCoverageTest {
         Cashflow noId = new Cashflow(null, "Pemasukan", "Bonus", "Bonus proyek", 500000, today);
         repo.save(noId);
         assertNotNull(noId.getId());
+
         Cashflow blankId = new Cashflow("  ", "Pemasukan", "Bonus", "Bonus 2", 100000, today);
         repo.save(blankId);
         assertFalse(blankId.getId().isBlank());
+
+        Cashflow explicitId = new Cashflow("fixed-id", "Pemasukan", "Bonus", "Bonus 3", 50000, today);
+        repo.save(explicitId);
+        assertEquals("fixed-id", explicitId.getId());
+        repo.deleteById("fixed-id");
+
         assertTrue(repo.findById(noId.getId()).isPresent());
+        assertTrue(repo.findById("tidak-ada").isEmpty());
 
         CashflowUseCase useCase = new CashflowUseCase(repo);
 
