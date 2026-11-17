@@ -44,10 +44,14 @@ public class CashflowUseCase {
         }
         String lower = keyword.toLowerCase(Locale.ROOT).trim();
         return repository.findAll().stream()
-                .filter(c -> (c.getDeskripsi() != null && c.getDeskripsi().toLowerCase(Locale.ROOT).contains(lower))
-                        || (c.getKategori() != null && c.getKategori().toLowerCase(Locale.ROOT).contains(lower))
-                        || (c.getTipe() != null && c.getTipe().toLowerCase(Locale.ROOT).contains(lower)))
+                .filter(c -> cocok(c.getDeskripsi(), lower)
+                        || cocok(c.getKategori(), lower)
+                        || cocok(c.getTipe(), lower))
                 .collect(Collectors.toList());
+    }
+
+    private boolean cocok(String nilai, String lowerKeyword) {
+        return nilai != null && nilai.toLowerCase(Locale.ROOT).contains(lowerKeyword);
     }
 
     public void hapusCashflow(String id) {
