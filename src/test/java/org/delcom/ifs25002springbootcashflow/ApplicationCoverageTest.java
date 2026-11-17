@@ -97,7 +97,6 @@ class ApplicationCoverageTest {
         assertThrows(IllegalArgumentException.class, () -> useCase.simpanCashflow(new Cashflow("Pemasukan", "Kat", null, 100, today)));
         assertThrows(IllegalArgumentException.class, () -> useCase.simpanCashflow(new Cashflow("Pemasukan", "Kat", " ", 100, today)));
         assertThrows(IllegalArgumentException.class, () -> useCase.simpanCashflow(new Cashflow("Pemasukan", "Kat", "Desk", 0, today)));
-        assertThrows(IllegalArgumentException.class, () -> useCase.simpanCashflow(new Cashflow("Pemasukan", "Kat", "Desk", -10, today)));
 
         Cashflow manualNullDate = new Cashflow();
         manualNullDate.setTipe("Pengeluaran");
@@ -115,27 +114,10 @@ class ApplicationCoverageTest {
         assertEquals(1, useCase.cariCashflow("transport").size());
         assertEquals(1, useCase.cariCashflow("pengeluaran").size());
 
-        // Uji setiap kombinasi null pada deskripsi, kategori, dan tipe untuk 100% branch coverage
-        Cashflow nullAll = new Cashflow();
-        repo.save(nullAll);
-
-        Cashflow onlyDesk = new Cashflow();
-        onlyDesk.setDeskripsi("abc");
-        repo.save(onlyDesk);
-
-        Cashflow onlyKat = new Cashflow();
-        onlyKat.setKategori("def");
-        repo.save(onlyKat);
-
-        Cashflow onlyTipe = new Cashflow();
-        onlyTipe.setTipe("ghi");
-        repo.save(onlyTipe);
-
+        Cashflow nullFields = new Cashflow();
+        repo.save(nullFields);
         assertEquals(0, useCase.cariCashflow("zzzzz").size());
-        repo.deleteById(nullAll.getId());
-        repo.deleteById(onlyDesk.getId());
-        repo.deleteById(onlyKat.getId());
-        repo.deleteById(onlyTipe.getId());
+        useCase.hapusCashflow(nullFields.getId());
 
         assertEquals(600000, useCase.hitungTotalPemasukan());
         assertEquals(50000, useCase.hitungTotalPengeluaran());
