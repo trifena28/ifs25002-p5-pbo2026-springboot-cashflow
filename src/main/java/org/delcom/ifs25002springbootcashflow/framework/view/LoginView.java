@@ -61,7 +61,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         authUseCase.login(email, password).ifPresentOrElse(
                 account -> {
                     authSession.login(account);
-                    getUI().ifPresent(ui -> ui.navigate(CashflowListView.class));
+                    getUI().ifPresent(ui -> ui.navigate(""));
                 },
                 () -> Notification.show("Email atau kata sandi tidak valid.", 3000, Notification.Position.TOP_CENTER)
                         .addThemeVariants(NotificationVariant.LUMO_ERROR)

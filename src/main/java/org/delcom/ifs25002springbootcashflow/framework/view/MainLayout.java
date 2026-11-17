@@ -38,7 +38,10 @@ public class MainLayout extends AppLayout {
         });
         signOutButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
 
-        HorizontalLayout navbar = new HorizontalLayout(new DrawerToggle() {{ setAriaLabel("Buka menu navigasi"); }}, appTitle, accountInfo, signOutButton);
+        DrawerToggle drawerToggle = new DrawerToggle();
+        drawerToggle.getElement().setAttribute("aria-label", "Buka menu navigasi");
+
+        HorizontalLayout navbar = new HorizontalLayout(drawerToggle, appTitle, accountInfo, signOutButton);
         navbar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         navbar.expand(appTitle);
         navbar.setWidthFull();
