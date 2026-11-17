@@ -7,8 +7,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -34,15 +34,18 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
         H2 heading = new H2("Login Cashflow");
 
-        EmailField emailInput = new EmailField("Alamat Email");
+        TextField emailInput = new TextField("Alamat Email");
+        emailInput.setId("login-username");
         emailInput.setWidth("330px");
         emailInput.setRequiredIndicatorVisible(true);
 
         PasswordField passwordInput = new PasswordField("Kata Sandi");
+        passwordInput.setId("login-password");
         passwordInput.setWidth("330px");
         passwordInput.setRequiredIndicatorVisible(true);
 
         Button submitButton = new Button("Masuk", event -> authenticate(emailInput.getValue(), passwordInput.getValue()));
+        submitButton.setId("login-submit");
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         submitButton.setWidth("330px");
 
