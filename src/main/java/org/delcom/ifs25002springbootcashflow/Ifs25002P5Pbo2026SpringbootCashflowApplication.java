@@ -1,11 +1,14 @@
 package org.delcom.ifs25002springbootcashflow;
 
+import org.delcom.ifs25002springbootcashflow.config.DotEnv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application {
+public class Ifs25002P5Pbo2026SpringbootCashflowApplication {
+
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        DotEnv.load();
+        SpringApplication.run(Ifs25002P5Pbo2026SpringbootCashflowApplication.class, args);
     }
 }

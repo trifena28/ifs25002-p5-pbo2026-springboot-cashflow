@@ -1,64 +1,83 @@
 package org.delcom.ifs25002springbootcashflow.framework.view;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import org.delcom.ifs25002springbootcashflow.domain.entity.Role;
+import org.delcom.ifs25002springbootcashflow.domain.exception.ValidationException;
+import org.delcom.ifs25002springbootcashflow.framework.auth.AuthSession;
 import org.delcom.ifs25002springbootcashflow.usecase.AuthUseCase;
 
 @Route("register")
-@PageTitle("Daftar Akun - Cashflow 11S25002")
-public class RegisterView extends VerticalLayout {
+@PageTitle("Registrasi - Aplikasi Cashflow")
+public class RegisterView extends VerticalLayout implements BeforeEnterObserver {
 
-    public RegisterView(AuthUseCase authUseCase) {
+    private final AuthUseCase authUseCase;
+    private final AuthSession authSession;
+
+    public RegisterView(AuthUseCase authUseCase, AuthSession authSession) {
+        this.authUseCase = authUseCase;
+        this.authSession = authSession;
+
         setSizeFull();
-        setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
+        setAlignItems(FlexComponent.Alignment.CENTER);
+        setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
-        VerticalLayout card = new VerticalLayout();
-        card.setWidth("380px");
-        card.setPadding(true);
-        card.getStyle()
-                .set("border", "1px solid #e5e7eb")
-                .set("border-radius", "10px")
-                .set("background", "#ffffff");
+        H2 heading = new H2("Buat Akun Baru");
 
-        H2 title = new H2("Registrasi Akun Baru");
+        TextField fullNameInput = new TextField("Nama Lengkap");
+        fullNameInput.setWidth("330px");
+        fullNameInput.setRequiredIndicatorVisible(true);
 
-        TextField namaField = new TextField("Nama Lengkap");
-        namaField.setWidthFull();
+        EmailField emailInput = new EmailField("Alamat Email");
+        emailInput.setWidth("330px");
+        emailInput.setRequiredIndicatorVisible(true);
 
-        TextField usernameField = new TextField("Username / Email");
-        usernameField.setWidthFull();
+        PasswordField passwordInput = new PasswordField("Kata Sandi (minimal 6 karakter)");
+        passwordInput.setWidth("330px");
+        passwordInput.setRequiredIndicatorVisible(true);
 
-        PasswordField passwordField = new PasswordField("Password");
-        passwordField.setWidthFull();
+        Button registerButton = new Button("Daftar Akun", event ->
+                processRegistration(fullNameInput.getValue(), emailInput.getValue(), passwordInput.getValue()));
+        registerButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        registerButton.setWidth("330px");
 
-        Button registerBtn = new Button("Daftar", e -> {
-            try {
-                authUseCase.register(namaField.getValue(), usernameField.getValue(), passwordField.getValue());
-                Notification notif = Notification.show("Registrasi berhasil! Silakan login.", 3000, Notification.Position.TOP_CENTER);
-                notif.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                UI.getCurrent().navigate("login");
-            } catch (IllegalArgumentException ex) {
-                Notification notif = Notification.show(ex.getMessage(), 3000, Notification.Position.TOP_CENTER);
-                notif.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            }
-        });
-        registerBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        registerBtn.setWidthFull();
+        RouterLink loginLink = new RouterLink("Sudah terdaftar? Masuk di sini", LoginView.class);
 
-        RouterLink loginLink = new RouterLink("Sudah punya akun? Login", LoginView.class);
+        VerticalLayout formBox = new VerticalLayout(heading, fullNameInput, emailInput, passwordInput, registerButton, loginLink);
+        formBox.setWidth("380px");
+        formBox.setAlignItems(FlexComponent.Alignment.CENTER);
+        add(formBox);
+    }
 
-        card.add(title, namaField, usernameField, passwordField, registerBtn, loginLink);
-        add(card);
+    private void processRegistration(String name, String email, String password) {
+        try {
+            authUseCase.register(name, email, password, Role.USER);
+            Notification.show("Akun berhasil dibuat. Silakan masuk.", 3000, Notification.Position.TOP_CENTER)
+                    .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            getUI().ifPresent(ui -> ui.navigate(LoginView.class));
+        } catch (ValidationException ex) {
+            Notification.show(ex.getMessage(), 3000, Notification.Position.TOP_CENTER)
+                    .addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if (authSession.isLoggedIn()) {
+            event.forwardTo(CashflowListView.class);
+        }
     }
 }

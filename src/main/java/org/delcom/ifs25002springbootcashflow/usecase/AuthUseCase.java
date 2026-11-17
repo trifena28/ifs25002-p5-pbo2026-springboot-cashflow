@@ -1,36 +1,59 @@
 package org.delcom.ifs25002springbootcashflow.usecase;
 
-import org.delcom.ifs25002springbootcashflow.domain.User;
-import org.delcom.ifs25002springbootcashflow.domain.UserRepository;
+import org.delcom.ifs25002springbootcashflow.domain.entity.PasswordHasher;
+import org.delcom.ifs25002springbootcashflow.domain.entity.Role;
+import org.delcom.ifs25002springbootcashflow.domain.entity.User;
+import org.delcom.ifs25002springbootcashflow.domain.exception.ValidationException;
+import org.delcom.ifs25002springbootcashflow.domain.repository.IUserRepository;
 
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 public class AuthUseCase {
-    private final UserRepository userRepository;
 
-    public AuthUseCase(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    private final IUserRepository userRepo;
+
+    public AuthUseCase(IUserRepository userRepository) {
+        this.userRepo = userRepository;
     }
 
-    public User register(String nama, String username, String password) {
-        if (nama == null || nama.isBlank()) {
-            throw new IllegalArgumentException("Nama wajib diisi.");
+    public User register(String name, String email, String password, Role role) {
+        validateRegistrationData(name, email, password);
+
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+        if (userRepo.existsByEmail(normalizedEmail)) {
+            throw new ValidationException("Alamat email sudah terdaftar.");
         }
-        if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("Username / Email wajib diisi.");
-        }
-        if (password == null || password.length() < 4) {
-            throw new IllegalArgumentException("Password minimal 4 karakter.");
-        }
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("Username / Email sudah terdaftar.");
-        }
-        return userRepository.save(new User(nama.trim(), username.trim(), password));
+
+        Role assignedRole = Objects.requireNonNullElse(role, Role.USER);
+        User newAccount = new User(
+                name.trim(),
+                normalizedEmail,
+                PasswordHasher.hash(password),
+                assignedRole
+        );
+        return userRepo.save(newAccount);
     }
 
-    public Optional<User> login(String username, String password) {
-        if (username == null || password == null) return Optional.empty();
-        return userRepository.findByUsername(username)
-                .filter(u -> u.getPassword().equals(password));
+    public Optional<User> login(String email, String password) {
+        if (email == null || password == null) {
+            return Optional.empty();
+        }
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
+        return userRepo.findByEmail(normalizedEmail)
+                .filter(account -> PasswordHasher.verify(password, account.getPasswordHash()));
+    }
+
+    private void validateRegistrationData(String name, String email, String password) {
+        if (name == null || name.isBlank()) {
+            throw new ValidationException("Nama pengguna wajib diisi.");
+        }
+        if (email == null || email.isBlank()) {
+            throw new ValidationException("Email pengguna wajib diisi.");
+        }
+        if (password == null || password.length() < 6) {
+            throw new ValidationException("Password harus terdiri dari minimal 6 karakter.");
+        }
     }
 }
